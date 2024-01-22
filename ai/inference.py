@@ -1,11 +1,17 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pydicom
+
 from .postprocess import convert_soft_binary_to_hard_instance
 from .preprocess import preprocess_scan, reverse_spatial_changes
-from .segformer import init_model, preprocess_for_segformer, postprocess_segformer
+from .segformer import (init_model, postprocess_segformer,
+                        preprocess_for_segformer)
 
-model = init_model(r'C:\Users\Korisnik\Documents\GitHub\ai-mamo\ai\model_weights')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+weights_path = os.path.join(script_dir, "model_weights")
+model = init_model(weights_path)
 
 
 def infer(image: np.ndarray) -> np.ndarray:
@@ -29,7 +35,9 @@ def demo():
     image = pydicom.dcmread("sample_dicom.dcm").pixel_array
     mask = infer(image)
 
-    print(np.unique(mask))  # for sample_dicom this should print [0, 1] as there is background and one suspicious region
+    print(
+        np.unique(mask)
+    )  # for sample_dicom this should print [0, 1] as there is background and one suspicious region
 
     # uncomment to display this region
 
