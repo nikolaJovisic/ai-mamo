@@ -14,10 +14,11 @@ weights_path = os.path.join(script_dir, "model_weights")
 model = init_model(weights_path)
 
 
-def infer(image: np.ndarray) -> np.ndarray:
+def infer(image: np.ndarray, binarize: bool = True) -> np.ndarray:
     """
     Performs preprocessing, inference on the model and postprocessing for one image
     and returns instance mask of suspicious regions.
+    :param binarize: binarize mask to hard instance mask
     :param image: in a grayscale format as in dicom pixel_array.
     :return: mask in a format of a matrix containing indices of each region of interest.
     """
@@ -26,7 +27,8 @@ def infer(image: np.ndarray) -> np.ndarray:
     batch = np.expand_dims(image, axis=0)
     mask = model.predict(x=batch, batch_size=1).logits[0]
     mask = postprocess_segformer(mask)
-    mask = convert_soft_binary_to_hard_instance(mask)
+    if binarize:
+        mask = convert_soft_binary_to_hard_instance(mask)
     mask = reverse_spatial_changes(mask, spatial_changes)
     return mask
 
