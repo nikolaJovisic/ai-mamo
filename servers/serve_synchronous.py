@@ -9,7 +9,7 @@ import io
 from flask_cors import CORS
 from ai.inference import infer
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='mamo-front/build/')
 CORS(app)
 
 def process(image_stream):
@@ -34,6 +34,13 @@ def process(image_stream):
     processed_image.save(processed_image_stream, format='PNG')
     return processed_image_stream
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    print('**********************')
+    if path != "" and app.static_folder:
+        return app.send_static_file(path)
+    return app.send_static_file(r'index.html')
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
