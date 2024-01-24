@@ -1,0 +1,67 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+.App {
+  text-align: center;
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  cursor: pointer;
+  width: 80%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.dropzone p {
+  margin: 0;
+  font-size: 18px;
+  color: #888;
+}
+
+.image-preview {
+  display: flex;
+  justify-content: space-around; /* Space images evenly */
+  align-items: center; /* Center images vertically */
+  margin-top: 20px;
+}
+
+.image {
+  width: auto; /* Width is auto to maintain aspect ratio */
+  height: 450px; /* Fixed height for the images */
+  object-fit: contain; /* Ensures the full image is visible */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: auto; /* Center the image in the flex container */
+}
+
+/* Add this to your App.css */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 30px;
+}
+
+
+/* You can customize the styles further based on your preferences. */
