@@ -8,6 +8,7 @@ function App() {
   const [originalImage, setOriginalImage] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const config = require('./config.json');
 
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -22,7 +23,7 @@ function App() {
     const formData = new FormData();
     formData.append('file', file);
 
-    axios.post('http://localhost:5000/upload', formData, {
+    axios.post(`http://${config.server_url}:${config.rest_port}/`, formData, {
       responseType: 'blob',
       headers: {
         'Content-Type': 'multipart/form-data',
