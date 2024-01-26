@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -10,8 +11,10 @@ from ai.inference import infer
 
 # Enable logging
 debug_logger()
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_path = os.path.join(script_dir, "data")
+
+
+with open(f'config.json', 'r') as config_file:
+    config_data = json.load(config_file)
 
 # Define event handlers
 def handle_store(event):
@@ -21,16 +24,16 @@ def handle_store(event):
 
     # Save the dataset using a unique filename
     image_id = ds["AccessionNumber"].value
-    os.mkdir(os.path.join(data_path, image_id))
+    os.mkdir(os.path.join(config_data['data_path'], image_id))
 
-    filename = os.path.join(data_path, image_id, f"{image_id}.dcm")
+    filename = os.path.join(config_data['data_path'], image_id, f"{image_id}.dcm")
     ds.save_as(filename, write_like_original=False)
     print(f"Stored DICOM file: {filename}")
 
     image = extract_image(ds)
-    mask = infer(image)
+    mask = infer(image, binarize=False)
 
-    plt.imsave(os.path.join(data_path, image_id, f"{image_id}.png"), mask)
+    plt.imsave(os.path.join(config_data['data_path'], image_id, f"{image_id}.png"), mask, cmap='gray')
 
     # Return a 'Success' status
     return 0x0000
