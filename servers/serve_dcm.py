@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 from pynetdicom import AE, debug_logger, evt
 from pynetdicom.sop_class import \
     DigitalMammographyXRayImageStorageForPresentation
-
 from ai.inference import infer
 
 # Enable logging
