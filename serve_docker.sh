@@ -13,4 +13,5 @@ dcm_port_inside=$(jq '.dcm_port_inside' $config_file)
 docker kill aim
 docker rm aim
 docker run --name aim -p ${rest_port}:${rest_port_inside} -p ${dcm_port}:${dcm_port_inside} aimamo
-# docker run --name aim -p ${rest_port}:${rest_port_inside} aimamo
+
+
