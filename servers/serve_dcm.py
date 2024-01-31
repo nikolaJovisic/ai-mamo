@@ -4,8 +4,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 from pynetdicom import AE, debug_logger, evt
-from pynetdicom.sop_class import \
-    DigitalMammographyXRayImageStorageForPresentation
+from pynetdicom.sop_class import DigitalMammographyXRayImageStorageForPresentation, Verification
 
 from ai.inference import infer
 
@@ -16,7 +15,11 @@ debug_logger()
 with open(f'config.json', 'r') as config_file:
     config_data = json.load(config_file)
 
-# Define event handlers
+def handle_echo(event):
+    """Handle a C-ECHO request event."""
+    # You can add additional logic here if needed
+    return 0x0000  # Return 'Success' status
+
 def handle_store(event):
     """Handle a C-STORE request event."""
     ds = event.dataset
@@ -39,6 +42,8 @@ def handle_store(event):
     return 0x0000
 
 
+
+
 def extract_image(ds):
     pixel_data = ds.PixelData
     pixel_array = np.frombuffer(pixel_data, dtype=np.uint16)
@@ -48,13 +53,14 @@ def extract_image(ds):
     return image
 
 
-handlers = [(evt.EVT_C_STORE, handle_store)]
+handlers = [(evt.EVT_C_STORE, handle_store), (evt.EVT_C_ECHO, handle_echo)]
 
 # Define the AE
 ae = AE()
 
 # Add the supported presentation context
 ae.add_supported_context(DigitalMammographyXRayImageStorageForPresentation)
+ae.add_supported_context(Verification)
 
 # Start the AE
 ae.start_server(("0.0.0.0", 11112), block=True, evt_handlers=handlers)
