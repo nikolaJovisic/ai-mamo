@@ -1,11 +1,13 @@
 import json
 import os
+import threading
 
 import numpy as np
 from matplotlib import pyplot as plt
 from pynetdicom import AE, debug_logger, evt
 from pynetdicom.sop_class import DigitalMammographyXRayImageStorageForPresentation, Verification
 from ai.inference import infer
+
 
 # Enable logging
 debug_logger()
@@ -18,6 +20,7 @@ def handle_echo(event):
     """Handle a C-ECHO request event."""
     # You can add additional logic here if needed
     return 0x0000  # Return 'Success' status
+
 
 def handle_store(event):
     """Handle a C-STORE request event."""
@@ -32,13 +35,21 @@ def handle_store(event):
     ds.save_as(filename, write_like_original=False)
     print(f"Stored DICOM file: {filename}")
 
+    # Start the processing in a new thread
+    processing_thread = threading.Thread(target=process_image, args=(ds, image_id))
+    processing_thread.start()
+
+    # Return a 'Success' status immediately
+    return 0x0000
+
+def process_image(ds, image_id):
+    """Process the image in a separate thread."""
     image = extract_image(ds)
     mask = infer(image, binarize=False)
 
     plt.imsave(os.path.join(config_data['data_path'], image_id, f"{image_id}.png"), mask, cmap='gray')
 
-    # Return a 'Success' status
-    return 0x0000
+
 
 
 
