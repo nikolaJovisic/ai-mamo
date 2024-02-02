@@ -1,12 +1,15 @@
 import json
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from flask import Flask, request, send_file, send_from_directory, abort
 
 import io
 from flask_cors import CORS
+from matplotlib import cm
+
 from ai.inference import infer
 
 app = Flask(__name__, static_folder='mamo-front/build/')
@@ -23,12 +26,20 @@ def process(image_stream):
     image = image[..., 0]
     mask = infer(image, binarize=False)
 
+    plt.imsave('tmp.png', mask, cmap='gray')
+    mask_rgb = plt.imread('tmp.png')
+
     rgb_image = np.stack([image, image, image], axis=-1)
-    red_overlay = np.stack([mask, np.zeros_like(mask), np.zeros_like(mask)], axis=-1)
+    red_overlay = np.stack([mask_rgb[..., 0], np.zeros_like(mask_rgb[..., 0]), np.zeros_like(mask_rgb[..., 0])], axis=-1)
     blended_image = np.clip(rgb_image * (1 - red_overlay) + red_overlay * 255, 0, 255).astype(np.uint8)
 
-    rgb_mask = (np.stack([mask, mask, mask], axis=-1) * 255).astype(np.uint8)
-    report = np.concatenate([blended_image, rgb_mask], axis=1)
+    mask_report = (mask_rgb[..., :3] * 255).astype(np.uint8)
+
+    plt.imsave('a.png', blended_image)
+    plt.imsave('b.png', mask_report)
+
+
+    report = np.concatenate([blended_image, mask_report], axis=1)
 
     processed_image = Image.fromarray(report)
     processed_image_stream = io.BytesIO()
@@ -78,4 +89,4 @@ def download_file(id):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=config_data['rest_port_inside'], debug=True)
+    app.run(host="0.0.0.0", port=7000, debug=True)
