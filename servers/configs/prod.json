@@ -1,8 +1,0 @@
-{
-  "server_url" : "server.institutonline.ai",
-  "data_path" : "./data/",
-  "rest_port" : 55612,
-  "dcm_port" : 55613,
-  "rest_port_inside" : 5000,
-  "dcm_port_inside" : 11112
-}

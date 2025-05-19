@@ -1,6 +1,0 @@
-{
-  "server_url" : "localhost",
-  "data_path" : "./data/",
-  "rest_port" : 5000,
-  "dcm_port" : 11112
-}
