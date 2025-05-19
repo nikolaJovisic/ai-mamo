@@ -8,7 +8,7 @@ dcm_port=$(jq '.dcm_port' $config_file)
 rest_port_inside=$(jq '.rest_port_inside' $config_file)
 dcm_port_inside=$(jq '.dcm_port_inside' $config_file)
 
-# docker build . -t aimamo
+docker build . -t aimamo
 
 docker kill aim
 docker rm aim
