@@ -1,0 +1,6 @@
+{
+  "server_url" : "localhost",
+  "external_port" : 5000,
+  "internal_port" : 5000
+}
+
