@@ -1,5 +1,6 @@
 {
   "server_url" : "localhost",
+  "data_path": "./data",
   "external_port" : 5000,
   "internal_port" : 5000
 }
