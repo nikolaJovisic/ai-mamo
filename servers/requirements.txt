@@ -10,3 +10,5 @@ torch
 torchvision
 pandas
 einops
+pylibjpeg
+pylibjpeg-libjpeg
