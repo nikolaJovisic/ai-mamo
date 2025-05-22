@@ -8,9 +8,11 @@ from flask import Flask, request, send_file, send_from_directory, abort
 
 import io
 from flask_cors import CORS
+from flask import jsonify
 from matplotlib import cm
 
 from ai.inference import infer as seg_infer
+from ai.preprocess import negate_if_should
 from mama.inference import infer as mama_infer
 from mama.inference import get_encoder, get_head
 
@@ -35,6 +37,11 @@ def dicom_analysis():
     except Exception as e:
         return {"error": f"Invalid DICOM file: {str(e)}"}
 
+    img = dcm.pixel_array.astype(np.float32)
+    img = (img - img.min()) / (img.max() - img.min()) * 255
+    img = img.astype(np.uint8)
+    Image.fromarray(np.stack([img]*3, axis=-1)).save(png_path)
+
     return {
         "name": dcm.get("PatientName", "Unknown"),
         "jmbg": dcm.get("PatientID", "Unknown"),
@@ -47,7 +54,9 @@ def segment():
     image = np.array(image)
 
     image = image[..., 0]
+    image = negate_if_should(image)
     mask = seg_infer(image, binarize=False)
+
 
     plt.imsave('tmp.png', mask, cmap='gray')
     mask_rgb = plt.imread('tmp.png')
@@ -62,7 +71,7 @@ def segment():
     plt.imsave('b.png', mask_report)
 
 
-    report = np.concatenate([blended_image, mask_report], axis=1)
+    report = np.concatenate([rgb_image, blended_image, mask_report], axis=1)
 
     processed_image = Image.fromarray(report)
     processed_image_stream = io.BytesIO()
@@ -92,13 +101,13 @@ def upload_file():
         payload = dicom_analysis()
 
         if "error" in payload:
-            return {"error": payload["error"]}, 400  # or 422
+            return jsonify(error=payload["error"]), 400
         
-        segmentation = segment()
+        heatmap = segment()
 
-        processed_image.seek(0)
+        heatmap.seek(0)
         response = send_file(
-            path_or_file=segmented,
+            path_or_file=heatmap,
             mimetype='image/png',
             as_attachment=True,
             download_name='processed_image.png'
@@ -107,6 +116,7 @@ def upload_file():
         response.headers['JMBG'] = payload['jmbg']
         response.headers['Probability'] = payload['probability']
         return response
+
 
 
 

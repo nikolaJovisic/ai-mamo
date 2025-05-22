@@ -56,7 +56,6 @@ function App() {
           <div className="loading-spinner"></div>
         ) : (
           <>
-            {originalImage && <img src={originalImage} alt="Original" className="image" />}
             {processedImage && <img src={processedImage} alt="Processed" className="image" />}
           </>
         )}
