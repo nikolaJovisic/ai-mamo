@@ -6,7 +6,7 @@ from PIL import Image
 from tqdm import tqdm
 from torch.utils.data import Dataset, DataLoader
 import torch
-from .preprocess_mama import MamaTransform
+from mama.preprocess_mama import MamaTransform
 import einops
 import torch.nn as nn
 from pydicom import dcmread
@@ -45,14 +45,3 @@ def infer(encoder, head, img_path):
     embedding = encoder(img)
     return head(embedding).item()
 
-encoder = get_encoder('mama_embed_pretrained_40k_steps_last_dinov2_vit_ckpt.pth')
-head = get_head('head_weights.pth')
-
-print('1s')
-for entity in os.scandir('/home/nikola/projects/mammography/data/EMBED/small_subset/birads1_dicoms'):
-    result = infer(encoder, head, entity.path) 
-    print(result)
-print('5s')
-for entity in os.scandir('/home/nikola/projects/mammography/data/EMBED/small_subset/birads5_dicoms'):
-    result = infer(encoder, head, entity.path) 
-    print(result)

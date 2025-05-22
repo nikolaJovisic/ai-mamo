@@ -10,21 +10,44 @@ import io
 from flask_cors import CORS
 from matplotlib import cm
 
-from ai.inference import infer
+from ai.inference import infer as seg_infer
+from mama.inference import infer as mama_infer
+from mama.inference import get_encoder, get_head
+
+from pydicom import dcmread
+
+png_path = 'mammogram.png'
+dcm_path = 'mammogram.dcm'
+
+encoder = get_encoder('mama/mama_embed_pretrained_40k_steps_last_dinov2_vit_ckpt.pth')
+head = get_head('mama/head_weights.pth')
 
 app = Flask(__name__, static_folder='mamo-front/build/')
 CORS(app)
 
+
 with open(f'config.json', 'r') as config_file:
     config_data = json.load(config_file)
 
+def dicom_analysis():
+    try:
+        dcm = dcmread(dcm_path)
+    except Exception as e:
+        return {"error": f"Invalid DICOM file: {str(e)}"}
 
-def process(image_stream):
-    image = Image.open(image_stream)
+    return {
+        "name": dcm.get("PatientName", "Unknown"),
+        "jmbg": dcm.get("PatientID", "Unknown"),
+        "probability": mama_infer(encoder, head, dcm_path)
+    }
+    
+
+def segment():
+    image = Image.open(png_path)
     image = np.array(image)
 
     image = image[..., 0]
-    mask = infer(image, binarize=False)
+    mask = seg_infer(image, binarize=False)
 
     plt.imsave('tmp.png', mask, cmap='gray')
     mask_rgb = plt.imread('tmp.png')
@@ -64,18 +87,27 @@ def upload_file():
         return "No selected file", 400
     if file:
         file_stream = io.BytesIO()
-        file.save(file_stream)
-        file_stream.seek(0)
+        file.save(dcm_path)
 
-        processed_image = process(file_stream)
+        payload = dicom_analysis()
+
+        if "error" in payload:
+            return {"error": payload["error"]}, 400  # or 422
+        
+        segmentation = segment()
 
         processed_image.seek(0)
-        return send_file(
-            path_or_file=processed_image,
+        response = send_file(
+            path_or_file=segmented,
             mimetype='image/png',
             as_attachment=True,
             download_name='processed_image.png'
         )
+        response.headers['Name'] = payload['name']
+        response.headers['JMBG'] = payload['jmbg']
+        response.headers['Probability'] = payload['probability']
+        return response
+
 
 
 @app.route("/<id>", methods=["GET"])

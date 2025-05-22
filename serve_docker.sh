@@ -8,7 +8,7 @@ if [[ "$1" =~ ^--(.+)$ ]]; then
   ENV="${BASH_REMATCH[1]}"
 fi
 
-CONFIG_SOURCE="servers/config.${ENV}.json"
+CONFIG_SOURCE="config.${ENV}.json"
 CONFIG_DEST="servers/config.json"
 
 if [[ ! -f "$CONFIG_SOURCE" ]]; then
@@ -17,10 +17,11 @@ if [[ ! -f "$CONFIG_SOURCE" ]]; then
 fi
 
 echo "Using config: $CONFIG_SOURCE"
+
 cp "$CONFIG_SOURCE" "$CONFIG_DEST"
 
-external_port=$(jq '.external_port' $config_file)
-internal_port=$(jq '.internal_port' $config_file)
+external_port=$(jq '.external_port' $CONFIG_DEST)
+internal_port=$(jq '.internal_port' $CONFIG_DEST)
 
 docker build . -t aimamo
 

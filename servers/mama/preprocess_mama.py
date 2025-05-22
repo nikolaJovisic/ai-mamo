@@ -4,7 +4,7 @@ import numpy as np
 import torchvision.transforms as transforms
 from PIL import Image
 import einops
-from preprocess import keep_only_breast
+from mama.preprocess import keep_only_breast
 import torch
 
 
