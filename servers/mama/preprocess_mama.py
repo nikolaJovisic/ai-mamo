@@ -57,22 +57,14 @@ class KeepOnlyBreast(object):
         if isinstance(x, Image.Image):
             x = np.array(x)
 
-        x = x[..., 0]
-
         x, _ = keep_only_breast(x)
         x = einops.repeat(x, 'h w -> h w 3')
-
-        x = (x // 255).astype(np.uint8)
-
 
         img = Image.fromarray(x)
         return img
 
     def __call__(self, x):
-        if isinstance(x, Iterable):
-            return [self.__process__(im) for im in x]
-        else:
-            return self.__process__(x)
+        return self.__process__(x)
 
 class Pad(object):
     def __init__(self):
@@ -119,7 +111,7 @@ class MamaTransform(object):
                 Pad(),
                 transforms.Resize((img_size, img_size)),
                 transforms.ToTensor(),
-                transforms.Normalize([0.118, 0.118, 0.118], [0.1775, 0.1775, 0.1775]),
+                transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
             ]
         )
 
