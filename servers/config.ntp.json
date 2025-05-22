@@ -1,5 +1,5 @@
 {
-  "server_url" : "http://localhost:5000/",
+  "server_url" : "https://insight-mammo.institutonline.ai/",
   "data_path": "./data",
   "external_port" : 5000,
   "internal_port" : 5000

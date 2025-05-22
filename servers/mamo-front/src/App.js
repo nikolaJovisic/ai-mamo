@@ -23,7 +23,7 @@ function App() {
     const formData = new FormData();
     formData.append('file', file);
 
-    axios.post(`http://${config.server_url}:${config.external_port}/`, formData, {
+    axios.post(`${config.server_url}`, formData, {
       responseType: 'blob',
       headers: {
         'Content-Type': 'multipart/form-data',

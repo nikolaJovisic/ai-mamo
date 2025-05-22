@@ -6,3 +6,7 @@ matplotlib
 flask
 pynetdicom
 flask-cors
+torch
+torchvision
+pandas
+einops
