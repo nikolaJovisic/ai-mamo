@@ -15,11 +15,18 @@ from ai.inference import infer as seg_infer
 from ai.preprocess import negate_if_should
 from mama.inference import infer as mama_infer
 from mama.inference import get_encoder, get_head
+from pdf_gen import generate_radiology_report
 
 from pydicom import dcmread
 
 png_path = 'mammogram.png'
 dcm_path = 'mammogram.dcm'
+pdf_path = 'report.pdf'
+report_png_path = 'report.png'
+
+name = None
+jmbg = None
+probability = None
 
 encoder = get_encoder('mama/mama_embed_pretrained_40k_steps_last_dinov2_vit_ckpt.pth')
 head = get_head('mama/head_weights.pth')
@@ -42,12 +49,16 @@ def dicom_analysis():
     img = img.astype(np.uint8)
     Image.fromarray(np.stack([img]*3, axis=-1)).save(png_path)
 
-    return {
-        "name": dcm.get("PatientName", "Unknown"),
-        "jmbg": dcm.get("PatientID", "Unknown"),
-        "probability": mama_infer(encoder, head, dcm_path)
-    }
+    name = dcm.get("PatientName", "Unknown")
+    jmbg = dcm.get("PatientID", "Unknown")
+    probability = mama_infer(encoder, head, dcm_path)
     
+    return {
+        "name": name,
+        "jmbg": jmbg,
+        "probability": probability
+    }
+
 
 def segment():
     image = Image.open(png_path)
@@ -76,6 +87,7 @@ def segment():
     processed_image = Image.fromarray(report)
     processed_image_stream = io.BytesIO()
     processed_image.save(processed_image_stream, format='PNG')
+    processed_image.save(report_png_path)
     return processed_image_stream
 
 
@@ -118,7 +130,10 @@ def upload_file():
         return response
 
 
-
+@app.route('/report', methods=['GET'])
+def get_radiology_report():
+    generate_radiology_report(pdf_path, mammogram_path, name, jmbg, probability)
+    return send_file(pdf_path, mimetype='application/pdf', as_attachment=True, download_name=f'{name}.pdf')
 
 @app.route("/<id>", methods=["GET"])
 def download_file(id):
